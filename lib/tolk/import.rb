@@ -7,9 +7,7 @@ module Tolk
     module ClassMethods
 
       def import_secondary_locales
-        locales = Dir.entries(self.locales_config_path)
-        locales = locales.reject {|l| ['.', '..'].include?(l) || !l.ends_with?('.yml') }.map {|x| x.split('.').first } - [Tolk::Locale.primary_locale.name]
-
+        locales = I18n.available_locales.map(&:to_s) - [Tolk::Locale.primary_locale.name]
         locales.each {|l| import_locale(l) }
       end
 
@@ -37,10 +35,7 @@ module Tolk
     end
 
     def read_locale_file
-      locale_file = "#{self.locales_config_path}/#{self.name}.yml"
-      raise "Locale file #{locale_file} does not exists" unless File.exists?(locale_file)
-
-      self.class.flat_hash(YAML::load(IO.read(locale_file))[self.name])
+      self.class.flat_hash(I18n.backend.send(:translations)[name.to_sym])
     end
 
   end
